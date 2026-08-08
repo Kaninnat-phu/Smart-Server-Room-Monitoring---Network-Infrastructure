@@ -61,3 +61,18 @@ To ensure the infrastructure is fully operational, ICMP connectivity tests were 
 [PLACE YOUR PICTURE HERE - Upload a screenshot of Laptop1's Command Prompt showing a successful `ping` to Server1's IP address]
 
 The successful replies confirm that routing, wireless authentication, and physical layer connections are properly established.
+
+## 📁 Repository Structure
+
+```text
+├── images/                   # Folder containing all screenshots
+│   ├── topology.png
+│   ├── r1_config.png
+│   ├── wireless_setup.png
+│   └── ping_test.png
+├── configs/                  # (Optional) Text files of your router/switch configs
+│   ├── R1_run_config.txt
+│   └── R2_run_config.txt
+├── smart_server_room.pkt     # The actual Cisco Packet Tracer project file
+└── README.md                 # This documentation file
+
