@@ -19,7 +19,7 @@ This project demonstrates the design and configuration of a network infrastructu
 
 ## 🗺️ Network Topology
 
-[PLACE YOUR PICTURE HERE - Upload `image_ad529c.png` showing the full network map]
+<img width="1467" height="846" alt="topology" src="https://github.com/user-attachments/assets/4cd3c1b8-6ec2-44af-abe0-965321f023dc" />
 
 The network consists of two main sites connected via a serial/WAN link:
 1. **Remote Access Site:** Features a laptop connected wirelessly to an Access Point, which connects to SW1 and R1.
