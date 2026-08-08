@@ -112,6 +112,7 @@ Connectivity to the server was maintained with 0% packet loss, confirming that O
 │   ├── pic9.png
 │   ├── pic10.png
 │   └── pic11.png
+├── index.html                
 ├── network_topology.pkt
 └── README.md
 ```
