@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dual-link OSPF failover — server room network lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #081214;
+    --panel: #0E1E22;
+    --panel-hi: #14282D;
+    --rule: #1E3940;
+    --rule-hi: #2C525B;
+    --phosphor: #46D0C0;
+    --phosphor-dim: #1E5C57;
+    --amber: #E9A23B;
+    --amber-dim: #5C4318;
+    --fg: #DEEBE9;
+    --fg-mid: #8FAFAC;
+    --fg-low: #5F7D7B;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    --sans: "Archivo", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--phosphor);
+  }
+
+  .hero { padding: 80px 0 56px; }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 56px;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: clamp(38px, 5.4vw, 62px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    margin: 18px 0 20px;
+  }
+
+  h1 .cut { color: var(--amber); }
+
+  .lede {
+    color: var(--fg-mid);
+    font-size: 16.5px;
+    max-width: 46ch;
+    margin-bottom: 30px;
+  }
+
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    padding: 11px 20px;
+    border-radius: 3px;
+    text-decoration: none;
+    border: 1px solid var(--rule-hi);
+    color: var(--fg);
+    background: transparent;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+  }
+  .btn:hover { background: var(--panel-hi); border-color: var(--phosphor-dim); }
+  .btn-key {
+    background: var(--phosphor);
+    border-color: var(--phosphor);
+    color: #04211E;
+    font-weight: 500;
+  }
+  .btn-key:hover { background: #6FE0D2; border-color: #6FE0D2; color: #04211E; }
+  .btn:focus-visible, button:focus-visible {
+    outline: 2px solid var(--phosphor);
+    outline-offset: 3px;
+  }
+
+  .scope {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .scope-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--ink);
+  }
+
+  .scope-bar > span {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-low);
+  }
+
+  .lamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--phosphor);
+  }
+  .lamp i {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--phosphor);
+    animation: pulse 2s ease-in-out infinite;
+    flex: none;
+  }
+  .lamp.warn { color: var(--amber); }
+  .lamp.warn i { background: var(--amber); }
+
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .scope svg { display: block; width: 100%; height: auto; }
+
+  .scope-foot {
+    border-top: 1px solid var(--rule);
+    padding: 14px;
+    background: var(--ink);
+  }
+
+  .route {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.85;
+    color: var(--fg-mid);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .route b { color: var(--phosphor); font-weight: 400; }
+  .route s { color: var(--fg-low); text-decoration-color: var(--amber); }
+
+  .trigger {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    padding: 9px 16px;
+    border-radius: 3px;
+    border: 1px solid var(--amber-dim);
+    background: transparent;
+    color: var(--amber);
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+  .trigger:hover { background: rgba(233,162,59,0.09); }
+
+  .link { stroke-width: 2; fill: none; transition: stroke 0.4s, opacity 0.4s; }
+  .link.up { stroke: var(--phosphor-dim); }
+  .link.down { stroke: var(--amber-dim); stroke-dasharray: 6 5; }
+  .pkt { transition: opacity 0.3s; }
+  .node-box { fill: var(--panel-hi); stroke: var(--rule-hi); stroke-width: 1; }
+  .node-t { font-family: var(--mono); font-size: 10px; fill: var(--fg); letter-spacing: 0.06em; }
+  .node-s { font-family: var(--mono); font-size: 8.5px; fill: var(--fg-low); }
+  .wire { stroke: var(--rule-hi); stroke-width: 1.5; fill: none; }
+  .lbl { font-family: var(--mono); font-size: 8.5px; fill: var(--fg-low); letter-spacing: 0.05em; }
+
+  .readings {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .reading { padding: 30px 4px 30px 0; }
+  .reading + .reading { padding-left: 30px; border-left: 1px solid var(--rule); }
+  .reading .n {
+    font-family: var(--mono);
+    font-size: clamp(30px, 4vw, 42px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--phosphor);
+    line-height: 1;
+    display: block;
+  }
+  .reading .l {
+    font-size: 13.5px;
+    color: var(--fg-mid);
+    margin-top: 12px;
+    max-width: 26ch;
+  }
+
+  section { padding: 76px 0; }
+
+  .head { margin-bottom: 40px; max-width: 58ch; }
+  .head h2 {
+    font-size: clamp(25px, 3.2vw, 33px);
+    font-weight: 700;
+    letter-spacing: -0.026em;
+    line-height: 1.15;
+    margin: 14px 0 12px;
+  }
+  .head p { color: var(--fg-mid); font-size: 15.5px; }
+
+  .seq { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .step {
+    background: var(--ink);
+    padding: 26px 28px;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+  .step-n {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--phosphor);
+    padding-top: 3px;
+    letter-spacing: 0.1em;
+  }
+  .step h3 { font-size: 17px; font-weight: 500; letter-spacing: -0.012em; margin-bottom: 7px; }
+  .step p { color: var(--fg-mid); font-size: 14.5px; max-width: 62ch; }
+  .step code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--phosphor);
+    background: var(--panel);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  .evidence { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .shot {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .shot-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-low);
+  }
+  .shot-bar em {
+    font-style: normal;
+    margin-left: auto;
+    color: var(--phosphor);
+  }
+  .shot-bar.is-fail em { color: var(--amber); }
+  .shot img { display: block; width: 100%; background: #fff; }
+  .shot-cap { padding: 13px; font-size: 13.5px; color: var(--fg-mid); border-top: 1px solid var(--rule); }
+
+  .topo-full {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: #fff;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 44px 0 72px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  footer p { font-family: var(--mono); font-size: 12px; color: var(--fg-low); letter-spacing: 0.04em; }
+  footer a { color: var(--phosphor); text-decoration: none; font-family: var(--mono); font-size: 12.5px; }
+  footer a:hover { text-decoration: underline; }
+
+  .rv { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .rv.in { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .readings { grid-template-columns: 1fr; }
+    .reading + .reading { padding-left: 0; border-left: none; border-top: 1px solid var(--rule); }
+    .reading { padding: 26px 0; }
+    .evidence { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 1fr; gap: 10px; }
+    section { padding: 58px 0; }
+    .hero { padding: 52px 0 40px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition-duration: 0.01ms !important; }
+    .rv { opacity: 1; transform: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-grid">
+      <div>
+        <p class="tag">Cisco Packet Tracer &middot; OSPF area 0</p>
+        <h1>One link <span class="cut">dies.</span><br>Nothing else does.</h1>
+        <p class="lede">A server room network built on two redundant core links. When the primary path goes down, OSPF reconverges on its own and traffic keeps moving &mdash; no manual failover, no dropped packets.</p>
+        <div class="actions">
+          <a class="btn btn-key" href="https://github.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure" target="_blank" rel="noopener">View repository</a>
+          <a class="btn" href="#evidence">See the evidence</a>
+        </div>
+      </div>
+
+      <div class="scope">
+        <div class="scope-bar">
+          <span>R1 &rarr; R2 core path</span>
+          <span class="lamp" id="lamp"><i></i><em id="lampText" style="font-style:normal">Both links up</em></span>
+        </div>
+
+        <svg viewBox="0 0 520 240" role="img" aria-labelledby="scopeTitle">
+          <title id="scopeTitle">Animated diagram of two routers connected by two links, with packets flowing between them</title>
+
+          <path class="wire" d="M60 196 L60 168"></path>
+          <path class="wire" d="M110 155 L160 130"></path>
+          <path class="wire" d="M360 130 L410 155"></path>
+          <path class="wire" d="M460 168 L460 196"></path>
+
+          <path id="pathA" class="link up" d="M175 108 L345 108"></path>
+          <path id="pathB" class="link up" d="M175 140 L345 140"></path>
+
+          <text class="lbl" x="260" y="99" text-anchor="middle">g0/1 &middot; 10.0.0.0/30</text>
+          <text class="lbl" x="260" y="162" text-anchor="middle">g0/2 &middot; 10.0.0.4/30</text>
+
+          <circle id="pA1" class="pkt" r="3.5" fill="#46D0C0"></circle>
+          <circle id="pA2" class="pkt" r="3.5" fill="#46D0C0"></circle>
+          <circle id="pB1" class="pkt" r="3.5" fill="#46D0C0"></circle>
+          <circle id="pB2" class="pkt" r="3.5" fill="#46D0C0"></circle>
+
+          <rect class="node-box" x="120" y="104" width="56" height="40" rx="3"></rect>
+          <text class="node-t" x="148" y="122" text-anchor="middle">R1</text>
+          <text class="node-s" x="148" y="134" text-anchor="middle">2911</text>
+
+          <rect class="node-box" x="344" y="104" width="56" height="40" rx="3"></rect>
+          <text class="node-t" x="372" y="122" text-anchor="middle">R2</text>
+          <text class="node-s" x="372" y="134" text-anchor="middle">2911</text>
+
+          <rect class="node-box" x="26" y="196" width="68" height="34" rx="3"></rect>
+          <text class="node-t" x="60" y="212" text-anchor="middle">Laptop1</text>
+          <text class="node-s" x="60" y="223" text-anchor="middle">192.168.10.0</text>
+
+          <rect class="node-box" x="426" y="196" width="68" height="34" rx="3"></rect>
+          <text class="node-t" x="460" y="212" text-anchor="middle">Server1</text>
+          <text class="node-s" x="460" y="223" text-anchor="middle">192.168.20.0</text>
+        </svg>
+
+        <div class="scope-foot">
+          <div class="route" id="route">O  192.168.20.0 [110/2] via <b>10.0.0.2</b>, GigabitEthernet0/1
+                        [110/2] via <b>10.0.0.6</b>, GigabitEthernet0/2</div>
+          <button class="trigger" id="trigger">Shut down g0/1 &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="readings rv">
+    <div class="reading">
+      <span class="n">0%</span>
+      <p class="l">packet loss measured across the simulated link failure</p>
+    </div>
+    <div class="reading">
+      <span class="n">2</span>
+      <p class="l">equal-cost OSPF paths carrying traffic between core routers</p>
+    </div>
+    <div class="reading">
+      <span class="n">1</span>
+      <p class="l">extended ACL filtering ICMP while leaving HTTP reachable</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="head rv">
+      <p class="tag">The build</p>
+      <h2>Four moves, in order</h2>
+      <p>Each step exists because the one before it created something to verify. The sequence matters &mdash; the failover test only means anything once the baseline is proven.</p>
+    </div>
+
+    <div class="seq rv">
+      <div class="step">
+        <div class="step-n">01</div>
+        <div>
+          <h3>Address both core links</h3>
+          <p>R1 and R2 are cabled twice over GigabitEthernet0/1 and 0/2, each on its own <code>/30</code> &mdash; <code>10.0.0.0/30</code> and <code>10.0.0.4/30</code>. Separate subnets keep the two paths independently routable rather than collapsing into one segment.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <div>
+          <h3>Run OSPF across both</h3>
+          <p>Every connected network is advertised into <code>area 0</code> on both routers. OSPF forms a FULL adjacency over each link and installs two equal-cost routes to the server subnet, load-sharing rather than holding one in reserve.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <div>
+          <h3>Filter what reaches the server</h3>
+          <p>An extended ACL on R2 denies ICMP from the client subnet to Server1 while permitting HTTP. Ping from the laptop fails by design; the web service stays reachable. Filtering is selective, not a blanket block on the remote site.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">04</div>
+        <div>
+          <h3>Break it and measure</h3>
+          <p>GigabitEthernet0/1 is administratively shut down mid-traffic. OSPF withdraws the dead path, the routing table drops to a single entry, and reachability holds at 100%. The recovery is the deliverable, not the configuration.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <div class="head rv">
+      <p class="tag">Evidence</p>
+      <h2>Before and after the cut</h2>
+      <p>Captured from the router CLI on both sides of the failure. Same command, same destination &mdash; only the surviving path changes.</p>
+    </div>
+
+    <div class="evidence rv">
+      <div class="shot">
+        <div class="shot-bar">Baseline <em>both links up</em></div>
+        <img src="https://raw.githubusercontent.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure/main/images/pic7.png" alt="OSPF neighbor table showing two FULL adjacencies and a route table with two equal-cost paths">
+        <div class="shot-cap">Two FULL adjacencies, two equal-cost routes to 192.168.20.0.</div>
+      </div>
+      <div class="shot">
+        <div class="shot-bar is-fail">After failure <em>g0/1 down</em></div>
+        <img src="https://raw.githubusercontent.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure/main/images/pic10.png" alt="Route table after failure showing a single remaining path via GigabitEthernet0/2">
+        <div class="shot-cap">The dead path is withdrawn. One route remains, via g0/2.</div>
+      </div>
+      <div class="shot">
+        <div class="shot-bar">Baseline <em>100% reply</em></div>
+        <img src="https://raw.githubusercontent.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure/main/images/pic9.png" alt="Ping test to the server succeeding at 100 percent before the failure">
+        <div class="shot-cap">Reachability to Server1 before anything is touched.</div>
+      </div>
+      <div class="shot">
+        <div class="shot-bar is-fail">After failure <em>100% reply</em></div>
+        <img src="https://raw.githubusercontent.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure/main/images/pic11.png" alt="Ping test to the server still succeeding at 100 percent after the failure">
+        <div class="shot-cap">Identical result with a link removed. Nothing was reconfigured.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head rv">
+      <p class="tag">Full topology</p>
+      <h2>Wireless edge to data centre</h2>
+      <p>Laptop1 joins over WPA2 through AP1, crosses SW1 and the redundant core, and lands on Server1 behind SW2.</p>
+    </div>
+    <div class="rv">
+      <img class="topo-full" src="https://raw.githubusercontent.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure/main/images/pic1.png" alt="Full Packet Tracer topology: Laptop1, AP1, SW1, R1, dual links, R2, SW2, Server1">
+    </div>
+  </section>
+
+  <footer>
+    <p>Kaninnat Phuangla-or &middot; Cisco Packet Tracer &middot; 2026</p>
+    <a href="https://github.com/Kaninnat-phu/Smart-Server-Room-Monitoring---Network-Infrastructure" target="_blank" rel="noopener">Configuration and full write-up on GitHub &rarr;</a>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var pathA = document.getElementById("pathA");
+  var pathB = document.getElementById("pathB");
+  var trigger = document.getElementById("trigger");
+  var routeEl = document.getElementById("route");
+  var lamp = document.getElementById("lamp");
+  var lampText = document.getElementById("lampText");
+
+  var packets = [
+    { el: document.getElementById("pA1"), path: pathA, t: 0.0, line: "A" },
+    { el: document.getElementById("pA2"), path: pathA, t: 0.5, line: "A" },
+    { el: document.getElementById("pB1"), path: pathB, t: 0.25, line: "B" },
+    { el: document.getElementById("pB2"), path: pathB, t: 0.75, line: "B" }
+  ];
+
+  var linkAUp = true;
+
+  var routeUp = 'O  192.168.20.0 [110/2] via <b>10.0.0.2</b>, GigabitEthernet0/1\n                        [110/2] via <b>10.0.0.6</b>, GigabitEthernet0/2';
+  var routeDown = 'O  192.168.20.0 <s>[110/2] via 10.0.0.2, GigabitEthernet0/1</s>\n   192.168.20.0 [110/2] via <b>10.0.0.6</b>, GigabitEthernet0/2';
+
+  function place(p) {
+    var len = p.path.getTotalLength();
+    var pt = p.path.getPointAtLength(p.t * len);
+    p.el.setAttribute("cx", pt.x);
+    p.el.setAttribute("cy", pt.y);
+  }
+
+  packets.forEach(place);
+
+  if (!reduce) {
+    var last = performance.now();
+    requestAnimationFrame(function tick(now) {
+      var dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      packets.forEach(function (p) {
+        var live = p.line === "B" || linkAUp;
+        p.el.style.opacity = live ? 1 : 0;
+        if (!live) return;
+        p.t += dt * 0.36;
+        if (p.t > 1) p.t -= 1;
+        place(p);
+      });
+      requestAnimationFrame(tick);
+    });
+  }
+
+  trigger.addEventListener("click", function () {
+    linkAUp = !linkAUp;
+    pathA.setAttribute("class", linkAUp ? "link up" : "link down");
+    trigger.textContent = linkAUp ? "Shut down g0/1 \u2192" : "Bring g0/1 back up \u21ba";
+    routeEl.innerHTML = linkAUp ? routeUp : routeDown;
+    lamp.className = linkAUp ? "lamp" : "lamp warn";
+    lampText.textContent = linkAUp ? "Both links up" : "g0/1 down \u00b7 rerouted";
+    if (reduce) {
+      packets.forEach(function (p) {
+        p.el.style.opacity = (p.line === "B" || linkAUp) ? 1 : 0;
+      });
+    }
+  });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+
+  document.querySelectorAll(".rv").forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>
