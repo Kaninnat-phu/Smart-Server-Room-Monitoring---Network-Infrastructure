@@ -69,13 +69,12 @@ The successful replies confirm that routing, wireless authentication, and physic
 
 ```text
 ├── images/                   # Folder containing all screenshots
-│   ├── topology.png
-│   ├── r1_config.png
-│   ├── wireless_setup.png
-│   └── ping_test.png
-├── configs/                  # (Optional) Text files of your router/switch configs
-│   ├── R1_run_config.txt
-│   └── R2_run_config.txt
-├── smart_server_room.pkt     # The actual Cisco Packet Tracer project file
+│   ├── pic1.png
+│   ├── pic2.png
+│   ├── pic3.png
+│   ├── pic4.png
+│   ├── pic5.png
+│   ├── pic6.png
+│   └── pic7.png
+├── smart_server_room.pkt     # The Cisco Packet Tracer project file
 └── README.md                 # This documentation file
-
