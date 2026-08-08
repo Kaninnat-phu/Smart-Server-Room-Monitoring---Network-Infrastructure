@@ -32,33 +32,36 @@ The network consists of two main sites connected via a serial/WAN link:
 ### Step 1: Base Device Configuration
 Configured hostnames, basic security (enable secret passwords), and assigned IP addresses to the GigabitEthernet interfaces on both R1 and R2 to establish the foundational network structure.
 
-[PLACE YOUR PICTURE HERE - Upload a cropped screenshot of the R1 Command Line showing the IP address configuration commands]
+<img width="694" height="694" alt="image" src="https://github.com/user-attachments/assets/931aba6f-d523-4074-9ebc-00c3cd824cbe" />
 
 ### Step 2: Wireless Network Setup
 Configured the Home Router/Access Point (AP1) with a secure SSID and WPA2-PSK authentication to allow remote monitoring devices to securely join the network. 
 
-[PLACE YOUR PICTURE HERE - Upload a screenshot of the AP1 Wireless GUI settings showing the SSID and password]
+<img width="886" height="679" alt="image" src="https://github.com/user-attachments/assets/746d40b4-162a-46e2-a7eb-5698893dd562" />
+
 
 Successfully authenticated Laptop1 to the wireless network:
 
-[PLACE YOUR PICTURE HERE - Upload a screenshot of Laptop1's "PC Wireless" module showing a successful connection]
+<img width="687" height="681" alt="image" src="https://github.com/user-attachments/assets/b5ed2a28-9091-4aca-b35e-989a8f650192" />
 
 ### Step 3: Routing Configuration
 Implemented routing between R1 and R2 to ensure the wireless subnet can communicate with the server subnet across the core link. 
 
-[PLACE YOUR PICTURE HERE - Upload a screenshot of the `show ip route` command on R2 to prove the routing table is populated]
+<img width="688" height="643" alt="image" src="https://github.com/user-attachments/assets/f09b3d17-9f34-46db-b9b5-e67e24009048" />
+
 
 ### Step 4: Server and IoT Services
 Configured the central monitoring server (Server1) with a static IP address and enabled the necessary services to monitor the smart room environment.
 
-[PLACE YOUR PICTURE HERE - Upload a screenshot of the "Services" tab on Server1 showing the IoT/Web services turned on]
+<img width="691" height="675" alt="image" src="https://github.com/user-attachments/assets/a1a2364a-2839-4f57-95bc-9bb54896c416" />
+
 
 ---
 
 ## ✅ Verification and Testing
 To ensure the infrastructure is fully operational, ICMP connectivity tests were performed from the edge device (Laptop1) across the routing boundary to the main server.
 
-[PLACE YOUR PICTURE HERE - Upload a screenshot of Laptop1's Command Prompt showing a successful `ping` to Server1's IP address]
+<img width="334" height="163" alt="image" src="https://github.com/user-attachments/assets/6fcce37b-a893-4c30-ad5f-555774272291" />
 
 The successful replies confirm that routing, wireless authentication, and physical layer connections are properly established.
 
