@@ -1,5 +1,7 @@
 # Smart Server Room Monitoring Infrastructure
 
+**🔗 Project page:** [kaninnat-phu.github.io/Smart-Server-Room-Monitoring---Network-Infrastructure](https://kaninnat-phu.github.io/Smart-Server-Room-Monitoring---Network-Infrastructure/)
+
 ## 📝 Project Overview
 This project demonstrates the design and configuration of a network infrastructure built to support a Smart Server Room Monitoring system. Designed in Cisco Packet Tracer, the lab establishes end-to-end connectivity across multiple routers and switches, integrating secure wireless access points for remote monitoring laptops and dedicated server nodes for data collection. The core links between routers are built with dual redundant paths, using OSPF to provide automatic failover if one link goes down.
 
